@@ -1,13 +1,11 @@
-# api/v1/views/__init__.py
+#!/usr/bin/python3
+"""
+Module that sets up the Flask application and registers the blueprint
+"""
 from flask import Blueprint
+
+# Ensure that all imports are at the top of the file
 from api.v1.views.index import *
 
-<<<<<<< HEAD
-# Blueprint creation should be after all imports
+# Define the Blueprint after all imports
 app_views = Blueprint('app_views', __name__, url_prefix='/api/v1')
-=======
-app_views = Blueprint('app_views', __name__, url_prefix='/api/v1')
-
-# Importing views to register with the blueprint
-from api.v1.views.index import *
->>>>>>> 4e72b6e78efa6938111d8958d04d3eec034cf233
