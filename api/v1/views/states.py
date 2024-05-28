@@ -1,146 +1,131 @@
 #!/usr/bin/python3
-<<<<<<< HEAD
-"""
-create states etc..
-"""
-=======
-"""states"""
-from api.v1.views import app_views
->>>>>>> 7c42ad06336f696b5d90f30c5755a66cf841d511
+"""This module implement a rule that return a view"""
 from flask import jsonify, abort, request
 from models import storage
+from api.v1.views import app_views
+from models.city import City
+from models.place import Place
+from models.user import User
 from models.state import State
-from datetime import datetime
-import uuid
+from models.amenity import Amenity
+from flasgger.utils import swag_from
 
-<<<<<<< HEAD
-@app_views.route('/states', methods=['GET'], strict_slashes=False)
-def get_states():
-    """
-    Retrieves the list of all State objects
-    """
-    states = storage.all(State).values()
-    state_list = [state.to_dict() for state in states]
-    return jsonify(state_list)
 
-@app_views.route('/states/<state_id>', methods=['GET'], strict_slashes=False)
-def get_state(state_id):
-    """
-    Retrieves a single State object
-    """
-    state = storage.get(State, state_id)
-    if state:
-        return jsonify(state.to_dict())
-    else:
+@app_views.route("/cities/<city_id>/places", methods=["GET"],
+                 strict_slashes=False)
+@swag_from('documentation/place/get_places.yml', methods=['GET'])
+def place_by_city(city_id):
+    """View function that return place objects by city"""
+    city = storage.get(City, city_id)
+    if city is None:
         abort(404)
-=======
-
-@app_views.route('/states/', methods=['GET'])
-def list_states():
-    '''Retrieves a list of all State objects'''
-    list_states = [obj.to_dict() for obj in storage.all("State").values()]
-    return jsonify(list_states)
+    return jsonify([place.to_dict() for place in city.places])
 
 
-@app_views.route('/states/<state_id>', methods=['GET'])
-def get_state(state_id):
-    '''Retrieves a State object'''
-    all_states = storage.all("State").values()
-    state_obj = [obj.to_dict() for obj in all_states if obj.id == state_id]
-    if state_obj == []:
+@app_views.route("/places/<place_id>", methods=["GET"],
+                 strict_slashes=False)
+@swag_from('documentation/place/get_place.yml', methods=['GET'])
+def show_place(place_id):
+    """Endpoint that return a Place object"""
+    place = storage.get(Place, place_id)
+    if place is None:
         abort(404)
-    return jsonify(state_obj[0])
+    return jsonify(place.to_dict())
 
->>>>>>> 7c42ad06336f696b5d90f30c5755a66cf841d511
 
-@app_views.route('/states/<state_id>', methods=['DELETE'])
-def delete_state(state_id):
-<<<<<<< HEAD
-    """
-    Deletes a State object
-    """
-    state = storage.get(State, state_id)
-    if state:
-        storage.delete(state)
-        storage.save()
-        return jsonify({}), 200
-    else:
-=======
-    '''Deletes a State object'''
-    all_states = storage.all("State").values()
-    state_obj = [obj.to_dict() for obj in all_states if obj.id == state_id]
-    if state_obj == []:
->>>>>>> 7c42ad06336f696b5d90f30c5755a66cf841d511
+@app_views.route("/places/<place_id>", methods=["DELETE"],
+                 strict_slashes=False)
+@swag_from('documentation/place/delete_place.yml', methods=['DELETE'])
+def delete_place(place_id):
+    """Endpoint that delete a Place object"""
+    place = storage.get(Place, place_id)
+    if place is None:
         abort(404)
-    state_obj.remove(state_obj[0])
-    for obj in all_states:
-        if obj.id == state_id:
-            storage.delete(obj)
-            storage.save()
-    return jsonify({}), 200
-
-<<<<<<< HEAD
-@app_views.route('/states', methods=['POST'], strict_slashes=False)
-def create_state():
-    """
-    Creates a State object
-    """
-    if not request.json:
-        return abort(400, 'Not a JSON')
-    kwargs = request.get_json()
-    if 'name' not in kwargs:
-        return abort(400, 'Missing name')
-    state = State(**kwargs)
-    state.save()
-    return jsonify(state.to_dict()), 201
-
-@app_views.route('/states/<state_id>', methods=['PUT'], strict_slashes=False)
-def update_state(state_id):
-    """
-    Updates a State object
-    """
-    state = storage.get(State, state_id)
-    if not state:
-        return abort(404)
-    if not request.json:
-        return abort(400, 'Not a JSON')
-    data = request.get_json()
-    ignore_keys = ['id', 'created_at', 'updated_at']
-    for key, value in data.items():
-        if key not in ignore_leys:
-            setattr(state, key, value)
-    state.save()
-    return jsonify(state.to_dict()), 200
-=======
-
-@app_views.route('/states/', methods=['POST'])
-def create_state():
-    '''Creates a State'''
-    if not request.get_json():
-        abort(400, 'Not a JSON')
-    if 'name' not in request.get_json():
-        abort(400, 'Missing name')
-    states = []
-    new_state = State(name=request.json['name'])
-    storage.new(new_state)
+    place.delete()
     storage.save()
-    states.append(new_state.to_dict())
-    return jsonify(states[0]), 201
+    return jsonify({})
 
 
-@app_views.route('/states/<state_id>', methods=['PUT'])
-def updates_state(state_id):
-    '''Updates a State object'''
-    all_states = storage.all("State").values()
-    state_obj = [obj.to_dict() for obj in all_states if obj.id == state_id]
-    if state_obj == []:
+@app_views.route("/cities/<city_id>/places", methods=["POST"],
+                 strict_slashes=False)
+@swag_from('documentation/place/post_place.yml', methods=['POST'])
+def insert_place(city_id):
+    """Endpoint that insert a Place object"""
+    city = storage.get(City, city_id)
+    if city is None:
         abort(404)
-    if not request.get_json():
-        abort(400, 'Not a JSON')
-    state_obj[0]['name'] = request.json['name']
-    for obj in all_states:
-        if obj.id == state_id:
-            obj.name = request.json['name']
+    res = request.get_json()
+    if type(res) != dict:
+        abort(400, description="Not a JSON")
+    if not res.get("user_id"):
+        abort(400, description="Missing user_id")
+    user = storage.get(User, res.get("user_id"))
+    if user is None:
+        abort(404)
+    if not res.get("name"):
+        abort(400, description="Missing name")
+    new_place = Place(**res)
+    new_place.city_id = city_id
+    new_place.save()
+    return jsonify(new_place.to_dict()), 201
+
+
+@app_views.route("/places_search", methods=["POST"],
+                 strict_slashes=False)
+@swag_from('documentation/place/put_place.yml', methods=['PUT'])
+def places_search():
+    """Retrieves all Place objects depending of the body of the request"""
+    body = request.get_json()
+    if type(body) != dict:
+        abort(400, description="Not a JSON")
+    id_states = body.get("states", [])
+    id_cities = body.get("cities", [])
+    id_amenities = body.get("amenities", [])
+    places = []
+    if id_states == id_cities == []:
+        places = storage.all(Place).values()
+    else:
+        states = [
+            storage.get(State, _id) for _id in id_states
+            if storage.get(State, _id)
+        ]
+        cities = [city for state in states for city in state.cities]
+        cities += [
+            storage.get(City, _id) for _id in id_cities
+            if storage.get(City, _id)
+        ]
+        cities = list(set(cities))
+        places = [place for city in cities for place in city.places]
+
+    amenities = [
+        storage.get(Amenity, _id) for _id in id_amenities
+        if storage.get(Amenity, _id)
+    ]
+
+    res = []
+    for place in places:
+        res.append(place.to_dict())
+        for amenity in amenities:
+            if amenity not in place.amenities:
+                res.pop()
+                break
+
+    return jsonify(res)
+
+
+@app_views.route("/places/<place_id>", methods=["PUT"],
+                 strict_slashes=False)
+@swag_from('documentation/place/post_search.yml', methods=['POST'])
+def update_place(place_id):
+    """Endpoint that update a Place object"""
+    place = storage.get(Place, place_id)
+    if place is None:
+        abort(404)
+    res = request.get_json()
+    if type(res) != dict:
+        abort(400, description="Not a JSON")
+    for key, value in res.items():
+        if key not in ["id", "user_id", "city_id", "created_at", "updated_at"]:
+            setattr(place, key, value)
     storage.save()
-    return jsonify(state_obj[0]), 200
->>>>>>> 7c42ad06336f696b5d90f30c5755a66cf841d511
+    return jsonify(place.to_dict()), 200
