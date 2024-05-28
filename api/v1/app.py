@@ -1,6 +1,5 @@
 #!/usr/bin/python3
-"""Flask server (variable app)
-"""
+"""Flask server (variable app)"""
 
 from flask import Flask, jsonify
 from models import storage
@@ -12,21 +11,18 @@ app = Flask(__name__)
 app.register_blueprint(app_views)
 app.url_map.strict_slashes = False
 
-
+# Enable CORS for the entire app
 CORS(app, resources={r"/api/v1/*": {"origins": "0.0.0.0"}})
-
 
 @app.teardown_appcontext
 def downtear(self):
-    '''Status of your API'''
+    '''Close storage'''
     storage.close()
-
 
 @app.errorhandler(404)
 def page_not_found(error):
-    '''return render_template'''
+    '''return JSON error response'''
     return jsonify(error='Not found'), 404
-
 
 if __name__ == "__main__":
     host = getenv('HBNB_API_HOST')

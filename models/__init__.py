@@ -8,10 +8,10 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
-# Import models only after Base is defined to avoid circular imports
 def initialize_models():
     from models.city import City
     from models.place import Place
+    from models.amenity import Amenity
 
 storage_t = getenv("HBNB_TYPE_STORAGE")
 
